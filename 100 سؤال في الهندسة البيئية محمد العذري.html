@@ -1,0 +1,748 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>نموذج تجريبي هندسة بيئة م/محمد العذري</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+--primary:#2563eb;--primary-dark:#1d4ed8;--success:#16a34a;--danger:#dc2626;
+--bg:#f0f4f8;--card:#fff;--text:#1e293b;--text-light:#64748b;--border:#e2e8f0;
+--radius:12px;--shadow:0 4px 24px rgba(0,0,0,.08);
+}
+body{font-family:'Segoe UI',Tahoma,Arial,sans-serif;background:var(--bg);color:var(--text);line-height:1.6;min-height:100vh}
+.container{max-width:720px;margin:0 auto;padding:16px}
+button{cursor:pointer;border:none;font-family:inherit;font-size:1rem;border-radius:var(--radius);transition:all .2s}
+button:active{transform:scale(.97)}
+
+.start-screen{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:90vh;text-align:center;gap:24px}
+.start-screen h1{font-size:1.8rem;color:var(--primary)}
+.start-screen p{color:var(--text-light);max-width:500px}
+.settings{background:var(--card);border-radius:var(--radius);padding:24px;box-shadow:var(--shadow);width:100%;max-width:400px;display:flex;flex-direction:column;gap:16px}
+.settings label{display:flex;justify-content:space-between;align-items:center;font-size:.95rem}
+.settings input[type=number]{width:80px;padding:8px;border:1px solid var(--border);border-radius:8px;text-align:center;font-size:1rem}
+.settings .chk{display:flex;align-items:center;gap:8px;justify-content:flex-start;flex-direction:row-reverse}
+.settings .chk input{width:20px;height:20px;accent-color:var(--primary)}
+.btn-primary{background:var(--primary);color:#fff;padding:14px 48px;font-size:1.1rem;font-weight:700}
+.btn-primary:hover{background:var(--primary-dark)}
+.btn-secondary{background:var(--border);color:var(--text);padding:10px 24px;font-weight:600}
+.btn-secondary:hover{background:#cbd5e1}
+.btn-danger{background:var(--danger);color:#fff;padding:10px 24px;font-weight:600}
+.btn-danger:hover{background:#b91c1c}
+.btn-success{background:var(--success);color:#fff;padding:10px 24px;font-weight:600}
+.btn-success:hover{background:#15803d}
+
+.resume-banner{background:#fef3c7;border:1px solid #fbbf24;border-radius:var(--radius);padding:16px;text-align:center;display:flex;flex-direction:column;gap:12px;width:100%;max-width:400px}
+.resume-banner .btns{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+
+.top-bar{position:sticky;top:0;z-index:100;background:var(--card);border-bottom:1px solid var(--border);padding:12px 16px;box-shadow:0 2px 8px rgba(0,0,0,.06)}
+.top-bar-inner{max-width:720px;margin:0 auto;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px}
+.top-bar .timer{font-weight:700;font-size:1.1rem;color:var(--danger);direction:ltr}
+.top-bar .progress-info{font-size:.9rem;color:var(--text-light)}
+.progress-bar-wrap{width:100%;height:6px;background:var(--border);border-radius:3px;margin-top:4px}
+.progress-bar-fill{height:100%;background:var(--primary);border-radius:3px;transition:width .3s}
+
+.q-card{background:var(--card);border-radius:var(--radius);padding:24px;margin:20px auto;box-shadow:var(--shadow);max-width:720px}
+.q-card .q-number{font-size:.85rem;color:var(--text-light);margin-bottom:8px}
+.q-card .q-text{font-size:1.1rem;font-weight:600;margin-bottom:20px;line-height:1.8}
+.choices{display:flex;flex-direction:column;gap:10px}
+.choice-btn{width:100%;text-align:right;padding:14px 18px;border:2px solid var(--border);border-radius:var(--radius);background:var(--card);font-size:1rem;line-height:1.6;transition:all .2s}
+.choice-btn:hover:not(.locked){background:#f1f5f9;border-color:var(--primary)}
+.choice-btn.selected{border-color:var(--primary);background:#eff6ff}
+.choice-btn.correct{border-color:var(--success);background:#f0fdf4;color:var(--success);font-weight:700}
+.choice-btn.wrong{border-color:var(--danger);background:#fef2f2;color:var(--danger)}
+.choice-btn.locked{cursor:default}
+.explanation-box{margin-top:16px;padding:14px;background:#f0fdf4;border-right:4px solid var(--success);border-radius:8px;font-size:.95rem;line-height:1.8;display:none}
+.explanation-box.show{display:block}
+
+.q-nav{display:flex;justify-content:space-between;align-items:center;max-width:720px;margin:12px auto;gap:8px;flex-wrap:wrap}
+.q-nav .center-btn{flex:1;display:flex;justify-content:center}
+
+.results{max-width:720px;margin:20px auto;text-align:center}
+.results h2{font-size:1.6rem;margin-bottom:16px}
+.score-circle{width:160px;height:160px;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;margin:0 auto 24px;font-size:2rem;font-weight:800;border:6px solid var(--primary);color:var(--primary)}
+.score-circle small{font-size:.85rem;font-weight:400;color:var(--text-light)}
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin:20px 0}
+.stat-card{background:var(--card);border-radius:var(--radius);padding:16px;box-shadow:var(--shadow)}
+.stat-card .num{font-size:1.5rem;font-weight:700}
+.stat-card .lbl{font-size:.85rem;color:var(--text-light)}
+.stat-correct .num{color:var(--success)}
+.stat-wrong .num{color:var(--danger)}
+.stat-skip .num{color:#f59e0b}
+
+.review-filters{display:flex;gap:8px;justify-content:center;margin:16px 0;flex-wrap:wrap}
+.review-filters button{padding:8px 16px;border-radius:20px;font-size:.9rem;border:1px solid var(--border)}
+.review-filters button.active{background:var(--primary);color:#fff;border-color:var(--primary)}
+.review-item{background:var(--card);border-radius:var(--radius);padding:20px;margin:12px 0;box-shadow:var(--shadow);text-align:right}
+.review-item .ri-q{font-weight:600;margin-bottom:8px;line-height:1.8}
+.review-item .ri-your{margin:4px 0}
+.review-item .ri-correct{color:var(--success);font-weight:600;margin:4px 0}
+.review-item .ri-wrong{color:var(--danger)}
+.review-item .ri-exp{background:#f8fafc;padding:10px;border-radius:8px;margin-top:8px;font-size:.9rem;line-height:1.8}
+.data-check{background:var(--card);border-radius:var(--radius);padding:16px;margin:20px 0;box-shadow:var(--shadow);text-align:right;font-size:.9rem}
+.data-check h4{margin-bottom:8px}
+.data-check .warn{color:var(--danger)}
+
+.hidden{display:none!important}
+
+@media(max-width:480px){
+.q-card{padding:16px}
+.start-screen h1{font-size:1.4rem}
+.choice-btn{padding:12px 14px;font-size:.95rem}
+}
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-10px); }
+            60% { transform: translateY(-5px); }
+        }
+        
+        .contact-section {
+            background: linear-gradient(135deg, #DC143C 0%, #B91C1C 100%);
+            padding: 50px 30px;
+            text-align: center;
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .contact-section::before {
+            content: "";
+            position: absolute;
+            top: -50px;
+            right: -50px;
+            width: 150px;
+            height: 150px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+        }
+        
+        .contact-section::after {
+            content: "";
+            position: absolute;
+            bottom: -30px;
+            left: -30px;
+            width: 100px;
+            height: 100px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+        }
+        
+        .contact-container {
+            position: relative;
+            z-index: 1;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        .contact-section h2 {
+            font-size: 2em;
+            margin-bottom: 15px;
+            font-weight: 700;
+        }
+        
+        .contact-section p {
+            font-size: 1.1em;
+            margin-bottom: 30px;
+            opacity: 0.9;
+        }
+        
+        .email-button {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            background: white;
+            color: #DC143C;
+            padding: 15px 30px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-size: 1.1em;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .email-button:hover {
+            transform: translateY(-3px) scale(1.3);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+            color: #B91C1C;
+        }
+        
+        .email-icon {
+            font-size: 1.5em;
+        }
+        
+        .footer {
+            background: #1e3a8a;
+            color: white;
+            padding: 20px 30px;
+            text-align: center;
+            font-size: 0.9em;
+            opacity: 0.9;
+        }
+        
+        @media (max-width: 768px) {
+            .process-groups {
+                grid-template-columns: 1fr;
+                gap: 30px;
+            }
+            
+            .header h1 {
+                font-size: 2em;
+            }
+            
+            .body-content {
+                padding: 20px;
+            }
+            
+            .group-title {
+                padding: 20px;
+            }
+            
+            .group-content {
+                padding: 0 20px 20px;
+            }
+            
+            .collapsed .group-content {
+                padding: 0 20px;
+            }
+            
+            .item-details {
+                padding: 0 15px 15px 60px !important;
+            }
+            
+            .item-collapsed .item-details {
+                padding: 0 15px 0 60px !important;
+            }
+        }
+
+</style>
+</head>
+<body>
+
+<div id="startScreen" class="start-screen">
+<h1>نموذج تجريبي هندسة بيئة م/محمد العذري</h1>
+<p>100 سؤال تغطي العناوين التي تم اخذها في المقرر</p>
+<div id="resumeBanner" class="resume-banner hidden">
+<strong>لديك اختبار غير مكتمل</strong>
+<div class="btns">
+<button class="btn-success" onclick="resumeQuiz()">استكمال</button>
+<button class="btn-danger" onclick="startNew()">بدء جديد</button>
+</div>
+</div>
+<div class="settings" id="settingsPanel">
+<label>مدة الاختبار (دقائق): <input type="number" id="durationInput" value="120" min="1" max="300"></label>
+<div class="chk"><label for="shuffleQ">خلط الأسئلة</label><input type="checkbox" id="shuffleQ"></div>
+<div class="chk"><label for="shuffleC">خلط الخيارات</label><input type="checkbox" id="shuffleC"></div>
+</div>
+<button class="btn-primary" id="startBtn" onclick="startQuiz()">بدء الاختبار</button>
+</div>
+
+<div id="quizScreen" class="hidden">
+<div class="top-bar">
+<div class="top-bar-inner">
+<span class="timer" id="timerDisplay">00:00</span>
+<span class="progress-info" id="progressInfo">1 / 100</span>
+</div>
+<div class="progress-bar-wrap"><div class="progress-bar-fill" id="progressBar" style="width:0%"></div></div>
+</div>
+<div class="container">
+<div class="q-card">
+<div class="q-number" id="qNumber"></div>
+<div class="q-text" id="qText"></div>
+<div class="choices" id="choicesContainer"></div>
+<div class="explanation-box" id="explanationBox"></div>
+</div>
+<div class="q-nav">
+<button class="btn-secondary" id="prevBtn" onclick="goTo(currentIndex-1)">السابق</button>
+<div class="center-btn"><button class="btn-primary" id="confirmBtn" onclick="confirmAnswer()">تأكيد الإجابة</button></div>
+<button class="btn-secondary" id="nextBtn" onclick="goTo(currentIndex+1)">التالي</button>
+</div>
+<div style="text-align:center;margin:12px 0"><button class="btn-danger" onclick="finishQuiz()">إنهاء الاختبار</button></div>
+</div>
+</div>
+
+<div id="resultsScreen" class="hidden">
+<div class="container results">
+<h2>النتائج</h2>
+<div class="score-circle" id="scoreCircle"><span id="scorePercent"></span><small id="scoreLabel"></small></div>
+<div class="stats-grid">
+<div class="stat-card stat-correct"><div class="num" id="statCorrect">0</div><div class="lbl">صحيح</div></div>
+<div class="stat-card stat-wrong"><div class="num" id="statWrong">0</div><div class="lbl">خطأ</div></div>
+<div class="stat-card stat-skip"><div class="num" id="statSkip">0</div><div class="lbl">متروك</div></div>
+<div class="stat-card"><div class="num" id="statTime">-</div><div class="lbl">الوقت المستغرق</div></div>
+</div>
+<button class="btn-primary" onclick="showReview('all')" style="margin:16px 8px">مراجعة الإجابات</button>
+<button class="btn-secondary" onclick="backToStart()">اختبار جديد</button>
+<div id="dataCheck" class="data-check hidden"></div>
+</div>
+</div>
+
+<div id="reviewScreen" class="hidden">
+<div class="container">
+<h2 style="text-align:center;margin:16px 0">مراجعة الإجابات</h2>
+<div class="review-filters">
+<button class="active" onclick="filterReview('all',this)">الكل</button>
+<button onclick="filterReview('wrong',this)">الأخطاء فقط</button>
+<button onclick="filterReview('correct',this)">الصحيح فقط</button>
+<button onclick="filterReview('skipped',this)">المتروك</button>
+</div>
+<div id="reviewList"></div>
+<div style="text-align:center;margin:20px 0"><button class="btn-secondary" onclick="showResults()">العودة للنتائج</button></div>
+</div>
+</div>
+
+<script>
+
+const questions = [
+	{id:1,question:"أي من أنواع المطهرات التالية يترك 'أثراً متبقياً' (Residual) يحمي المياه من التلوث داخل شبكات التوزيع؟",choices:["الأوزون (Ozone)","الأشعة فوق البنفسجية (UV)","الكلور (Chlorine)","الترشيح الفائق (Ultrafiltration)"],correctIndex:2,explanation:"الكلور يتميز بقدرته على البقاء في الماء لفترة (Residual Chlorine) مما يضمن القضاء على أي تلوث قد يطرأ داخل الأنابيب."},
+	{id:2,question:"ما هي الظاهرة الهيدروليكية التي تحدث عند الإغلاق المفاجئ للصمامات في خطوط ضخ المياه؟",choices:["التكهف (Cavitation)","المطرقة المائية (Water Hammer)","التحميل الهيدروليكي الزائد","التدفق الطبقي"],correctIndex:1,explanation:"المطرقة المائية هي موجة ضغط عالية تنتج عن التغير المفاجئ في سرعة السائل، وقد تؤدي لانفجار الأنابيب."},
+	{id:3,question:"ما هي الوظيفة الأساسية لطبقة 'البطانة الطينية أو الجيوميمبرين' في المطامر الصحية (Landfills)؟",choices:["تسهيل عملية تحلل النفايات","منع تسرب العصارة (Leachate) للمياه الجوفية","تجميع غاز الميثان","منع الروائح الكريهة من الانتشار"],correctIndex:1,explanation:"تعمل البطانة كعازل يمنع وصول السوائل الملوثة الناتجة عن النفايات إلى باطن الأرض."},
+	{id:4,question:"أي من الجمعيات التالية تعتبر المرجع العالمي الأهم لوضع معايير جودة مياه الشرب؟",choices:["جمعية المهندسين المدنيين (ASCE)","منظمة الصحة العالمية (WHO)","منظمة التجارة العالمية (WTO)","الجمعية الدولية للهيدروليكا"],correctIndex:1,explanation:"منظمة الصحة العالمية تصدر 'Guidelines for Drinking-water Quality' التي تتبناها معظم الدول في تشريعاتها."},
+	{id:5,question:"وفقاً لمبادئ الهندسة البيئية، أي طريقة هي الأفضل لترتيب أولويات إدارة النفايات (Waste Hierarchy)؟",choices:["الحرق > التدوير > التقليل","الدفن > التدوير > إعادة الاستخدام","التقليل > إعادة الاستخدام > التدوير","التدوير > الحرق > التقليل"],correctIndex:2,explanation:"الهرم البيئي يبدأ بالتقليل من المصدر (Reduce)، ثم إعادة الاستخدام (Reuse)، ثم التدوير (Recycle)."},
+	{id:6,question:"ما هي التقنية المستخدمة لإزالة الأملاح الذائبة في محطات تحلية مياه البحر؟",choices:["الترشيح الرملي السريع","التناضح العكسي (Reverse Osmosis)","التهوية الميكانيكية","إضافة الكلور"],correctIndex:1,explanation:"التناضح العكسي يعتمد على غشاء نصف نفاذ يسمح بمرور الماء ويمنع الأملاح تحت ضغط عالٍ."},
+	{id:6,question:"ماذا يقيس مؤشر حجم الحمأة (SVI)؟",choices:["عمر الحمأة في الحوض","قدرة الحمأة على الترسيب والانضغاط","كمية البكتيريا الميتة","نسبة غاز الميثان في الحمأة"],correctIndex:1,explanation:"الـ SVI هو مؤشر يستخدم لمراقبة كفاءة الترسيب في حوض الترسيب الثانوي."},
+	{id:7,question:"في المباني الخضراء، ماذا يشير مصطلح 'المياه الرمادية' (Greywater)؟",choices:["مياه الصرف الصحي الناتجة عن المراحيض","المياه الناتجة عن المغاسل والاستحمام (بدون ملوثات ثقيلة)","مياه السيول والأمطار","المياه الملوثة بالمواد الكيميائية الصناعية"],correctIndex:1,explanation:"المياه الرمادية هي المياه الناتجة عن الاستخدامات المنزلية الخفيفة ويمكن إعادة استخدامها في الري أو السيفونات."},
+	{id:8,question:"في الهيدروليكا البيئية، ما هي العلاقة بين درجة حرارة الماء وسرعة ترسيب الجسيمات؟",choices:["لا توجد علاقة","زيادة الحرارة تزيد اللزوجة فتقل سرعة الترسيب","زيادة الحرارة تقلل اللزوجة فتزيد سرعة الترسيب","الحرارة تؤثر فقط على الطعم واللون"],correctIndex:2,explanation:"بزيادة الحرارة تقل لزوجة الماء (Viscosity)، مما يقلل المقاومة التي يلقاها الجسيم أثناء الترسيب فتزداد سرعته وفق قانون ستوكس."},
+	{id:9,question:"ما هي الجهة المسؤولة عن منح شهادة (LEED) للمباني المستدامة بيئياً؟",choices:["منظمة الأمم المتحدة","المجلس الأمريكي للمباني الخضراء (USGBC)","منظمة الآيزو (ISO)","وكالة حماية البيئة (EPA)"],correctIndex:1,explanation:"نظام الريادة في تصميمات الطاقة والبيئة (LEED) يدار من قبل مجلس المباني الخضراء الأمريكي."},
+	{id:10,question:"وفقاً للتقرير، ما هما المادتان الأساسيتان اللتان ينتج عن تفاعلهما الكيميائي رغوة البولي يوريثان في مصنع الإسفنج؟",choices:["البولي إيثيلين والكلور","البوليول (Polyol) وثنائي إيزوسيانات التولين (TDI)","البي في سي (PVC) والمذيبات العضوية","الكربون والنيتروجين السائل"],correctIndex:1,explanation:"ينتج الإسفنج من تفاعل كيميائي بين البولييول و(TDI) مع إضافة الماء ومواد مساعدة أخرى[cite: 150, 167]."},
+	{id:11,question:"في مصنع الإسفنج، تسمى الكتلة الإسفنجية الكبيرة والمستمرة الناتجة بعد عملية الصب والتشكيل بـ:",choices:["البلوك (Block)","الرغوة الجافة","الكعكة (Bun)","اللفافة الصناعية"],correctIndex:2,explanation:"يصب الخليط السائل على حزام ناقل ليبدأ التفاعل وتتمدد الرغوة مشكلة كتلة تسمى الكعكة (Bun)[cite: 174]."},
+	{id:12,question:"أشار التقرير إلى وجود 'انبعاثات غازية' في مصنع الإسفنج ناتجة عن التفاعلات الكيميائية، وهي عبارة عن:",choices:["أكاسيد الكبريت","أول أكسيد الكربون","المركبات العضوية المتطايرة (VOCs)","غاز الميثان"],correctIndex:2,explanation:"تنتج أبخرة من المركبات العضوية المتطايرة (VOCs) كأثر جانبي للطبيعة الكيميائية لتصنيع الإسفنج[cite: 185]."},
+	{id:13,question:"كيف يطبق مصنع الإسفنج مبدأ 'الاقتصاد الدائري' في التعامل مع المخلفات الصلبة (قصاصات الإسفنج)؟",choices:["عن طريق حرقها لتوليد الطاقة","بتحويلها إلى منتج ثانوي (الكنب المضغوط) للمجالس العربية","عن طريق طمرها في مقالب النفايات البلدية","بإعادة صهرها كيميائياً وتحويلها لسائل"],correctIndex:1,explanation:"يتم إعادة تدوير قصاصات وبقايا الإسفنج لصنع الكنب المضغوط المستخدم في المجالس العربية، مما يحقق مبدأ إغلاق الحلقة[cite: 185, 191]."},
+	{id:14,question:"ما هي التوصية الهندسية التي قدمها الطلاب لمعالجة مشكلة المياه العادمة في مصنع الإسفنج؟",choices:["زيادة عدد الصهاريج لنقل المياه","إنشاء محطة معالجة أولية (Primary Treatment) في الموقع","تصريف المياه مباشرة إلى شبكة الصرف العمومية","استخدام المياه العادمة في تبريد الآلات"],correctIndex:1,explanation:"أوصى التقرير بالانتقال من نظام 'التخزين والنقل' إلى إنشاء محطة معالجة أولية لتخفيف الأحمال العضوية عن المحطة المركزية[cite: 198, 206]."},
+	{id:15,question:"في مصنع إعادة تدوير البلاستيك، ما هو الإجراء الهيدروليكي الذي اتخذه المصنع لمعالجة مياه الغسيل قبل نقلها؟",choices:["تركيب مرشحات رملية سريعة","إنشاء ثلاثة أحواض ترسيب (Sedimentation Tanks)","إضافة مواد كيميائية لتعقيم المياه","استخدام تقنية التناضح العكسي"],correctIndex:1,explanation:"قام المصنع بإنشاء ثلاثة أحواض ترسيب لتعمل كمعالجة ابتدائية لإزالة الأتربة والشوائب قبل النقل[cite: 51, 52]."},
+	{id:16,question:"ما هي المادة البلاستيكية التي ذكر التقرير أنها تستخدم لصناعة 'أنابيب الري' و'خراطيم التمديدات الكهربائية'؟",choices:["البوليسترين","البولي إيثيلين عالي الكثافة (HDPE)","النايلون","المطاط الطبيعي"],correctIndex:1,explanation:"تعتبر المواد المصنوعة من البولي إيثيلين عالي الكثافة (HDPE) أو البولي بروبلين (PP) هي الأساس في إعادة تدوير هذه المنتجات[cite: 211, 213]."},
+	{id:17,question:"أظهر التقرير 'قصوراً واضحاً' في مصنع البلاستيك يتعلق بسلامة العمال، وتمثل هذا القصور في:",choices:["عدم توفر وجبات غذائية للعمال","التعرض المباشر للغازات الناتجة عن عملية الصهر وغياب التهوية","زيادة ساعات العمل اليومية","عدم توفر إضاءة كافية في عنبر الإنتاج"],correctIndex:1,explanation:"لوحظ أن العمال يتعرضون مباشرة للأبخرة السامة الناتجة عن الصهر بسبب افتقار المصنع لمنظومة تهوية ميكانيكية ومداخن[cite: 53, 55]."},
+	{id:18,question:"ما هي 'العملية الأساسية' التي يتم فيها تحويل قطع البلاستيك الصغيرة إلى حبيبات (Pellets) ليسهل نقلها؟",choices:["التقطيع والتكسير","الغسل والتنظيف","الصهر والتحبيب (Melting and Pelletizing)","التعبئة والتغليف"],correctIndex:2,explanation:"يتم صهر البلاستيك في آلة البثق ثم سحبه وقصه إلى حبيبات صغيرة تسمى (Pellets) لإعادة تصنيعها[cite: 48, 49]."},
+	{id:19,question:"في تقييم الأثر البيئي لمصنع البلاستيك، أي من البنود التالية حصل على تقييم 'غير ملتزم'؟",choices:["إدارة المخلفات الصلبة","إدارة المخلفات السائلة","السلامة المهنية والتحكم بالانبعاثات","تطبيق مبدأ الاستدامة"],correctIndex:2,explanation:"تم تقييم المصنع بـ 'غير ملتزم' في جانبي التحكم بالانبعاثات والسلامة المهنية بسبب غياب أنظمة التهوية وأدوات الحماية[cite: 60]."},
+	{id:20,question:"وفقاً لوصف خط إنتاج الإسفنج في التقرير، ما هي الوظيفة الأساسية لـ 'رأس الخلط' (Mixing Head)؟",choices:["تغليف المنتج النهائي بالبلاستيك","خلط المواد الكيميائية (Polyol, TDI) مع الإضافات بدقة وفي وقت قصير","تبريد كتلة الإسفنج بعد خروجها","تكسير بقايا الإسفنج الصلبة"],correctIndex:1,explanation:"رأس الخلط هو قلب العملية حيث يتم دمج المواد الكيميائية بنسب محددة لتبدأ عملية التفاعل الكيميائي فور صبها."},
+	{id:21,question:"في عملية إنتاج الإسفنج، ما الذي يسبب تمدد الخليط وارتفاعه (Rise) ليأخذ شكل القالب؟",choices:["مراوح هواء عملاقة","تفاعلات كيميائية تطلق غازات تؤدي لانتفاخ الرغوة","مكبس هيدروليكي يسحب المادة للأعلى","إضافة مادة الصمغ العربي"],correctIndex:1,explanation:"التفاعل الكيميائي بين المكونات يولد غازات (مثل ثاني أكسيد الكربون) تسبب انتفاخ الخليط وتحوله من سائل إلى رغوة صلبة."},
+	{id:22,question:"أين يتم تخزين 'كعكات الإسفنج' (Buns) بعد قصها مباشرة ولماذا؟",choices:["في ثلاجات تبريد لمنع تعفنها","في غرف معزولة (Curing Area) لاستكمال التفاعل الكيميائي والتخلص من الحرارة","في ساحة مكشوفة تحت أشعة الشمس","في أحواض مائية"],correctIndex:1,explanation:"تحتاج كتلة الإسفنج لفترة إنضاج (Curing) لاستكمال التفاعلات الداخلية وتبريد الحرارة الناتجة عن التفاعل الكيميائي الطارد للحرارة."},
+	{id:23,question:"ما هي المادة التي ذكر التقرير أنها تُضاف للخليط للتحكم في كثافة وصلابة الإسفنج المنتج؟",choices:["بودرة الرخام (أو كربونات الكالسيوم)","الرمل الناعم","نشارة الخشب","أكاسيد الحديد"],correctIndex:0,explanation:"تستخدم المواد الممالئة (Fillers) مثل كربونات الكالسيوم للتحكم في الخصائص الفيزيائية مثل الكثافة والقساوة."},
+	{id:24,question:"ذكر التقرير استخدام 'أحواض تبريد' في مصنع البلاستيك، ما هو الغرض الهندسي منها بعد عملية البثق؟",choices:["غسل البلاستيك من الأتربة","رفع درجة حرارة البلاستيك ليصبح ليناً","تجميد خيوط البلاستيك المنصهرة لتسهيل عملية تقطيعها إلى حبيبات","إضافة لون للمنتج النهائي"],correctIndex:2,explanation:"تمر خيوط البلاستيك المنصهرة في أحواض مائية لتبرد وتتصلب فوراً، مما يسمح للقطاعة بتحويلها إلى حبيبات منتظمة."},
+	{id:25,question:"ما هو نوع 'نظام الصرف' المتبع في المنطقتين الصناعيتين اللتين تمت زيارتهما بحسب ملاحظاتكم؟",choices:["نظام صرف صحي مركزي متطور","نظام البيارات (Septic Tanks) والنزح الدوري عبر الصهاريج","نظام إعادة تدوير المياه المغلق","التصريف المباشر للأودية"],correctIndex:1,explanation:"أشار التقرير إلى غياب شبكة صرف عمومية والاعتماد على الخزانات التجميعية (البيارات) ونقلها بالوايتات."},
+	{id:26,question:"في تقييم المخاطر بمصنع الإسفنج، ما هو الخطر الأكبر المرتبط بتخزين مادة (TDI)؟",choices:["خطر الانزلاق","خطر التآكل الكيميائي وسمية الأبخرة للجهاز التنفسي","خطر الضوضاء العالية","خطر الانفجار الميكانيكي"],correctIndex:1,explanation:"مادة (TDI) مادة كيميائية حساسة وسمية أبخرتها عالية جداً وتتطلب تهوية خاصة ومعايير سلامة دقيقة."},
+	{id:27,question:"ما هي 'آلة البثق' (Extruder) في مصنع البلاستيك وما دورها؟",choices:["آلة لغسل البلاستيك بالصابون","آلة تقوم بصهر حبيبات البلاستيك ودفعها عبر قالب لتشكيل خيوط","آلة لفرز البلاستيك حسب اللون","ميزان إلكتروني ضخم"],correctIndex:1,explanation:"آلة البثق تستخدم الحرارة والضغط الميكانيكي (عبر لولب دوار) لصهر البلاستيك وتحويله إلى شكل طولي مستمر."},
+	{id:28,question:"اقترح التقرير استخدام 'الطاقة الشمسية' في المصانع، ما هو المبرر البيئي الرئيسي لهذا الاقتراح؟",choices:["لأنها أرخص من الكهرباء الحكومية","لتقليل الانبعاثات الكربونية والضوضاء الناتجة عن مولدات الديزل","لزيادة سرعة إنتاج الإسفنج","لتبريد الآلات بشكل أسرع"],correctIndex:1,explanation:"مولدات الديزل تسبب تلوثاً هوائياً (عوادم) وضوضائياً، واستبدالها بالطاقة الشمسية يعزز الاستدامة البيئية للمصنع."},
+	{id:29,question:"أي من مراحل إنتاج البلاستيك تعتبر الأكثر استهلاكاً للمياه بحسب مشاهدات الزيارة؟",choices:["مرحلة التقطيع","مرحلة الغسيل والتنظيف (Washing Line)","مرحلة التعبئة","مرحلة التخزين"],correctIndex:1,explanation:"تحتاج عملية تنظيف البلاستيك المستعمل من الشوائب والأتربة إلى كميات كبيرة من المياه، وهي التي تنتج مياه صرف ملوثة."},
+	{id:30,question:"ما هي التوصية الهندسية التي قدمها الطلاب لمواجهة 'الروائح الكريهة' في عنابر الإنتاج؟",choices:["رش معطرات جو بشكل دوري","تركيب منظومة تهوية شفط مركزية مع فلاتر كربونية","إغلاق جميع النوافذ","تقليل عدد العمال في العنبر"],correctIndex:1,explanation:"التهوية الميكانيكية الشاملة (Mechanical Ventilation) هي الحل الهندسي الأمثل لسحب الأبخرة والروائح وتجديد الهواء."},
+	{id:31,question:"لماذا يعتبر وجود 'طفيات الحريق' في مصنع الإسفنج أمراً حرجاً للغاية؟",choices:["بسبب وجود مواد سريعة الاشتعال وطبيعة المنتج المسامية التي تساعد على انتشار النار","لأن القانون يتطلب ذلك فقط","لتبريد الآلات عند ارتفاع حرارتها","لاستخدامها في تنظيف القوالب"],correctIndex:0,explanation:"الإسفنج والمواد الكيميائية الداخلة في تصنيعه (مثل البوليول) مواد قابلة للاشتعال، وهيكل الإسفنج المسامي يجعل إخماد الحريق فيه صعباً إذا بدأ."},
+	{id:32,question:"في مصنع البلاستيك، ما هو الغرض من استخدام 'الفرامة' (Crusher) في بداية الخط؟",choices:["تلوين البلاستيك","تحويل المخلفات البلاستيكية الكبيرة إلى قطع صغيرة (Flakes)","صهر البلاستيك","تجفيف البلاستيك من الماء"],correctIndex:1,explanation:"الفرامة هي أول خطوة لتحويل الأحجام الكبيرة من المخلفات إلى قصاصات صغيرة يسهل غسلها ومعالجتها لاحقاً."},
+	{id:33,question:"ماذا لاحظ الطلاب فيما يخص 'أدوات السلامة الشخصية' (PPE) في كلا المصنعين؟",choices:["التزام كامل من جميع العمال","غياب واضح لارتداء الكمامات والقفازات ووسائل حماية السمع","ارتداء العمال لملابس رسمية","توفر أحدث أجهزة التنفس الاصطناعي"],correctIndex:1,explanation:"رصد التقرير إهمالاً في جوانب السلامة المهنية، حيث يعمل أغلب العمال بدون وسائل حماية تقيهم من الأبخرة والضجيج."},
+	{id:34,question:"بناءً على التقرير، ما هو 'الأثر البيئي' الناتج عن تصريف مياه غسيل البلاستيك بدون معالجة؟",choices:["زيادة خصوبة التربة","تلوث المياه الجوفية والتربة بالمركبات العضوية والعوالق","تحسين جودة الهواء المحيط","لا يوجد أثر بيئي سلبي"],correctIndex:1,explanation:"مياه الغسيل تحتوي على زيوت، أتربة، وبقايا كيميائية، وتسربها للبيئة يضر بالموارد المائية والتربة."},
+	{id:35,question:"ما هو 'المنتج النهائي' الذي يتم بيعه للمصانع الأخرى من مصنع تدوير البلاستيك؟",choices:["أكياس بلاستيكية جاهزة","حبيبات بلاستيكية (Granules/Pellets) خام","خزانات مياه ضخمة","ألعاب أطفال"],correctIndex:1,explanation:"المصنع يقوم بمعالجة النفايات وتحويلها إلى حبيبات خام تُباع لمصانع التحويل (مثل مصانع الأنابيب والكراسي)."},
+	{id:36,question:"ما هي العملية التي تتم داخل 'المجفف' (Dryer) في خط تدوير البلاستيك؟",choices:["تجفيف البلاستيك من الرطوبة والماء بعد الغسيل","تبريد البلاستيك المنصهر","حرق الشوائب","إضافة مادة اللمعان"],correctIndex:0,explanation:"يجب إزالة كافة آثار المياه من قصاصات البلاستيك قبل إدخالها إلى آلة البثق (الصهر) لضمان جودة المنتج النهائي."},
+	{id:37,question:"أوصى التقرير بضرورة 'الفصل من المصدر' للنفايات البلاستيكية، لماذا؟",choices:["لزيادة تكلفة النقل","لتسهيل عملية التدوير ورفع جودة الحبيبات المنتجة","لتقليل كمية البلاستيك في السوق","لأن البلاستيك الملون لا يمكن تدويره"],correctIndex:1,explanation:"الفصل من المصدر يمنع اختلاط أنواع البلاستيك المختلفة ويقلل من الأوساخ العالقة، مما يرفع كفاءة المعالجة وجودة المنتج."},
+	{id:38,question:"في مصنع الإسفنج، يتم التحكم في 'سرعة الحزام الناقل' لتتناسب مع:",choices:["عدد العمال المتوفرين","معدل تفاعل وتمدد الرغوة (Rise Time)","سعة مخزن المصنع","درجة حرارة الجو الخارجية فقط"],correctIndex:1,explanation:"يجب أن تتحرك القاعدة (الحزام) بسرعة تتوافق مع سرعة تمدد الإسفنج لضمان الحصول على كتلة متجانسة وبالارتفاع المطلوب."},
+	{id:39,question:"أين تقع طبقة الأوزون (Ozone Layer) بشكل رئيسي في الغلاف الجوي؟",choices:["طبقة التروبوسفير (Troposphere)","طبقة الستراتوسفير (Stratosphere)","طبقة الميزوسفير (Mesosphere)","طبقة الثيرموسفير (Thermosphere)"],correctIndex:1,explanation:"يوجد حوالي 90% من أوزون الغلاف الجوي في طبقة الستراتوسفير، على ارتفاع يتراوح بين 15 إلى 35 كم."},
+	{id:40,question:"ما هي الوظيفة الحيوية الأساسية لطبقة الأوزون بالنسبة للحياة على الأرض؟",choices:["تنظيم حركة الرياح العالمية","امتصاص معظم الأشعة فوق البنفسجية (UV-B) الضارة","توليد غاز الأكسجين للتنفس","منع سقوط النيازك"],correctIndex:1,explanation:"تعمل طبقة الأوزون كدرع واقٍ يمتص الأشعة فوق البنفسجية التي تسبب سرطان الجلد وتلف المحاصيل الزراعية."},
+	{id:41,question:"أي من المواد التالية تعتبر المتهم الأول في نضوب طبقة الأوزون وفقاً لبروتوكول مونتريال؟",choices:["أكاسيد النيتروجين","مركبات الكلوروفلوروكربون (CFCs)","ثاني أكسيد الكربون","غاز الميثان"],correctIndex:1,explanation:"تطلق هذه المركبات ذرات الكلور عند تعرضها للأشعة فوق البنفسجية، وتقوم ذرة كلور واحدة بتحطيم آلاف جزيئات الأوزون."},
+	{id:42,question:"ثارت مؤخراً براكين في منطقة 'الشق الأفريقي العظيم' وقرب البحر الأحمر، ما هو الغاز الرئيسي المنبعث منها والذي يسبب المطر الحمضي؟",choices:["غاز الهيليوم","ثاني أكسيد الكبريت (SO2)","الأرجون","الأكسجين"],correctIndex:1,explanation:"البراكين تطلق كميات ضخمة من SO2 الذي يتفاعل مع بخار الماء في الجو مكوناً حمض الكبريتيك (المطر الحمضي)."},
+	{id:43,question:"كيف تؤثر الانفجارات البركانية الضخمة على 'درجة حرارة' الأرض على المدى القصير؟",choices:["تؤدي لارتفاع فوري في الحرارة","تسبب تبريداً عالمياً نتيجة حجب الهباء الجوي (Aerosols) لأشعة الشمس","لا تؤثر على الحرارة إطلاقاً","تؤدي لزيادة رطوبة الجو فقط"],correctIndex:1,explanation:"تعمل جزيئات الرماد والكبريت المنبعثة من البراكين كمرآة تعكس أشعة الشمس بعيداً عن الأرض، مما يخفض الحرارة."},
+	{id:44,question:"ما هي وحدة قياس تركيز الأوزون في الغلاف الجوي؟",choices:["وحدة ديباي (Debye)","وحدة دوبسون (Dobson Unit - DU)","الديسيبيل","البارومتر"],correctIndex:1,explanation:"تُقاس سماكة طبقة الأوزون بوحدة 'دوبسون'، حيث يعادل 100 دوبسون حوالي 1 ملم من الأوزون النقي في الظروف القياسية."},
+	{id:45,question:"في سياق نشاط براكين البحر الأحمر، ما هو التهديد البيئي المباشر للمنشآت الهيدروليكية (كتحلية المياه) القريبة؟",choices:["زيادة ملوحة البحر","انسداد المآخذ بالرماد البركاني وتغير كيمياء المياه","زيادة ضغط الماء","تغير اتجاه الأمواج"],correctIndex:1,explanation:"الرماد البركاني والمواد الكيميائية المنبعثة قد تلوث مآخذ محطات التحلية وتؤثر على فلاتر المعالجة."},
+	{id:46,question:"أي نوع من الأشعة فوق البنفسجية هو الأكثر خطورة ويتم امتصاصه 'بالكامل' بواسطة الأوزون والأكسجين؟",choices:["UV-A","UV-B","UV-C","الأشعة تحت الحمراء"],correctIndex:2,explanation:"الأشعة من نوع C هي الأكثر طاقة وفتكاً، ولحسن الحظ يتم امتصاصها بالكامل في الغلاف الجوي العلوي."},
+	{id:47,question:"تتكون جزيئة الأوزون من:",choices:["ذرتي أكسجين (O2)","ثلاث ذرات أكسجين (O3)","ذرة كربون وذرتي أكسجين","ذرة أكسجين وذرة هيدروجين"],correctIndex:1,explanation:"الأوزون هو شكل متآصل من الأكسجين يتكون من ثلاث ذرات مرتبطة معاً."},
+	{id:48,question:"لماذا يظهر 'ثقب الأوزون' بشكل أوضح فوق القطب الجنوبي (Antarctica)؟",choices:["بسبب كثرة المصانع هناك","بسبب السحب الستراتوسفرية القطبية والبرودة الشديدة التي تسرع التفاعلات الكيميائية","لأن الجاذبية هناك أقوى","بسبب قلة الأشجار"],correctIndex:1,explanation:"تساهم البرودة الشديدة في تكوين سحب جليدية توفر سطحاً مثالياً للتفاعلات الكيميائية التي يحفزها الكلور لتحطيم الأوزون."},
+	{id:49,question:"ما هي العلاقة بين 'البراكين' و'نضوب الأوزون'؟",choices:["البراكين لا تؤثر على الأوزون","البراكين تطلق هباءً جوياً قد يحفز كيمياء تحطيم الأوزون في وجود الكلور","البراكين تزيد من سمك طبقة الأوزون","البراكين تطلق غاز الأوزون مباشرة"],correctIndex:1,explanation:"جزيئات الكبريت البركاني توفر مساحة سطحية تزيد من كفاءة الكلور (الناتج من النشاط البشري) في تحطيم الأوزون."},
+	{id:50,question:"عند حدوث ثوران بركاني في البحر الأحمر، ما هو الخطر الجيولوجي الذي قد يتبعه ويؤثر على المدن الساحلية؟",choices:["الأعاصير القمعية","أمواج التسونامي الناتجة عن الانهيارات الأرضية المائية","الانجراف القاري السريع","العواصف الرملية"],correctIndex:1,explanation:"الثوران البركاني تحت الماء أو بالقرب منه قد يسبب انهيارات أرضية ضخمة تؤدي لتولد أمواج تسونامي."},
+	{id:51,question:"أي غاز يسمى 'الأوزون السيئ' ويوجد في طبقة التروبوسفير (قرب سطح الأرض)؟",choices:["الأوزون الناتج عن البرق","الأوزون الناتج عن التلوث المراري والصناعي (Smog)","الأوزون الجبلي","لا يوجد أوزون سيئ"],correctIndex:1,explanation:"الأوزون عند مستوى سطح الأرض يعتبر ملوثاً ضاراً للصحة وللنباتات ويشكل جزءاً من الضباب الدخاني."},
+	{id:52,question:"ما هو 'مؤشر الأشعة فوق البنفسجية' (UV Index)؟",choices:["مقياس لسرعة الرياح","مقياس دولي لشدة الأشعة الحارقة للجلد في مكان وزمن معين","مقياس لنقاء مياه الشرب","مقياس لعمق البراكين"],correctIndex:1,explanation:"هو مقياس يبدأ من 0 إلى 11+، يستخدم لتحذير الناس من ضرورة الحماية من الشمس."},
+	{id:53,question:"بصفتك مهندس مدني، ما هو أثر 'المطر الحمضي' (الناتج عن البراكين أو التلوث) على المنشآت الخرسانية؟",choices:["يزيد من قوة الخرسانة","يتفاعل مع كربونات الكالسيوم ويؤدي لتآكل وتفتت الخرسانة (Carbonation)","يحمي حديد التسليح من الصدأ","لا يؤثر على المواد الإنشائية"],correctIndex:1,explanation:"الأحماض تتفاعل مع الوسط القاعدي للخرسانة، مما يؤدي لتدهورها وتسريع صدأ الحديد."},
+	{id:54,question:"ما هو 'اتفاق كيغالي' الملحق ببروتوكول مونتريال؟",choices:["اتفاق لمنع الصيد الجائر","اتفاق للحد من استخدام مركبات الهيدروفلوروكربون (HFCs) القوية في الاحتباس الحراري","اتفاق لتنظيف البحار من البلاستيك","اتفاق لتشجيع السياحة البركانية"],correctIndex:1,explanation:"استبدلت مركبات الـ CFCs بمركبات HFCs، وبينما هي آمنة للأوزون، وجد أنها غازات دفيئة قوية جداً، لذا جاء الاتفاق للحد منها."},
+	{id:55,question:"تسمى الصخور المنصهرة عندما تكون 'تحت' سطح الأرض بـ (Magma)، فماذا تسمى عند خروجها من البركان؟",choices:["جرانيت","لافا (Lava)","بازلت صلب","رماد"],correctIndex:1,explanation:"تسمى المادة المنصهرة بمجرد خروجها إلى السطح 'لافا' (Lava)."},
+	{id:56,question:"أي من الغازات التالية المنبعثة من البراكين يعتبر غازاً دفيئاً (Greenhouse Gas) يساهم في الاحترار طويل المدى؟",choices:["الأكسجين","ثاني أكسيد الكربون (CO2)","النيتروجين","الهيدروجين"],correctIndex:1,explanation:"على الرغم من أن البراكين تسبب تبريداً مؤقتاً بسبب الغبار، إلا أنها تطلق CO2 الذي يساهم في ظاهرة الاحتباس الحراري على المدى البعيد جداً."},
+	{id:57,question:"ما هي الأداة التي تستخدمها الأقمار الصناعية لقياس ثقب الأوزون؟",choices:["المجهر الإلكتروني","جهاز المطياف (Spectrometer)","السيزموجراف","التيرومتر"],correctIndex:1,explanation:"تقيس الأجهزة الطيفية كمية الضوء الممتص عند أطوال موجية معينة لتحديد تركيز الغازات في الجو."},
+	{id:58,question:"في المناطق القريبة من النشاط البركاني في اليمن (مثل ذمار أو جزر البحر الأحمر)، ما هي الفائدة 'الجيولوجية والبيئية' التي يمكن استغلالها؟",choices:["زيادة الأمطار","الطاقة الحرارية الأرضية (Geothermal Energy)","تعدين الذهب السائل","زيادة نسبة الأكسجين"],correctIndex:1,explanation:"يمكن استغلال حرارة باطن الأرض في المناطق البركانية لتوليد طاقة كهربائية نظيفة ومستدامة."},
+	{id:59,question:"وفقاً للقانون اليمني، ما هو الهدف الأسمى للجمعية اليمنية لحماية المستهلك؟",choices:["تحديد أسعار السلع في الأسواق","رعاية مصالح المستهلك والدفاع عن حقوقه أمام الجهات المختلفة","إدارة الموانئ والمطارات","توزيع المعونات الغذائية"],correctIndex:1,explanation:"الجمعية منظمة مجتمع مدني تهدف للدفاع عن حقوق المستهلك ونشر الوعي الاستهلاكي."},
+	{id:60,question:"متى تم صدور قانون حماية المستهلك اليمني النافذ حالياً؟",choices:["عام 1990","عام 2005","عام 2008 (قانون رقم 46)","عام 2015"],correctIndex:2,explanation:"صدر قانون حماية المستهلك برقم (46) في عام 2008."},
+	{id:61,question:"أي من الحقوق التالية لا يعتبر من الحقوق الأساسية للمستهلك التي كفلها القانون؟",choices:["الحق في الصحة والسلامة","الحق في الحصول على المعلومة الصحيحة","الحق في استبدال السلعة المعيبة","الحق في الحصول على السلع مجاناً في حالة الفقر"],correctIndex:3,explanation:"كفل القانون حقوق السلامة، المعلومة، والاختيار، ولكن الحصول المجاني ليس ضمن بنود قانون حماية المستهلك."},
+	{id:62,question:"في حال اكتشاف المستهلك لعيب في 'معدات هندسية' اشتراها، ما هي المدة القانونية المعتادة لتقديم شكوى بموجب ضمان العيوب الخفية؟",choices:["يوم واحد فقط","مدة لا تتجاوز شهر من اكتشاف العيب","سنة كاملة دون شرط","أسبوعين من تاريخ الشراء"],correctIndex:1,explanation:"يمنح القانون المستهلك الحق في الإبلاغ عن العيوب فور اكتشافها ضمن مدد معقولة تختلف حسب نوع السلعة."},
+	{id:63,question:"من هي الجهة الحكومية التي تعمل الجمعية اليمنية لحماية المستهلك بالتنسيق الوثيق معها؟",choices:["وزارة الصحة فقط","وزارة الصناعة والتجارة","وزارة الدفاع","وزارة العدل"],correctIndex:1,explanation:"وزارة الصناعة والتجارة هي الجهة الحكومية المشرفة والمسؤولة عن تنفيذ قانون حماية المستهلك."},
+	{id:64,question:"ما هي صلاحية الجمعية أثناء حملات التفتيش الحكومية على المنشآت (مثل المصانع التي زرتموها)؟",choices:["مصادرة السلع وإتلافها فوراً","إغلاق المصانع المخالفة بقرار إداري","الحضور بصفة مراقب لضمان نزاهة الإجراءات والشفافية","توقيف العمال المخالفين"],correctIndex:2,explanation:"الجمعية لها حق الرقابة الشعبية والحضور كمراقب لتعزيز الشفافية."},
+	{id:65,question:"ما هو الإجراء الذي تشجع عليه الجمعية عند شراء منتجات بلاستيكية (كما في مصنع التدوير) لضمان سلامة المستهلك؟",choices:["شراء الأرخص دائماً","التأكد من وجود رموز التدوير (Recycling Symbols) ومعرفة نوع البلاستيك","عدم شراء البلاستيك نهائياً","شراء البلاستيك الملون فقط"],correctIndex:1,explanation:"رموز التدوير (مثل مثلث الأرقام) توضح مدى أمان البلاستيك للاستخدام الغذائي أو الصناعي."},
+	{id:66,question:"وفقاً للمادة (25) من القانون، يعتبر الإعلان عن السلعة 'مضللاً' إذا:",choices:["كان سعرها مرتفعاً","تضمن بيانات كاذبة أو مبالغ فيها تخالف الواقع","كان باللغة الإنجليزية فقط","لم يتم عرضه في التلفاز"],correctIndex:1,explanation:"الإعلان المضلل هو الذي يخدع المستهلك بمعلومات غير حقيقية عن جودة أو منشأ السلعة."},
+	{id:67,question:"ما هو دور الجمعية في إعداد 'المواصفات القياسية' للسلع في اليمن؟",choices:["هي من تضع المواصفات بمفردها","المشاركة في عضوية اللجان الفنية للهيئة اليمنية للمواصفات والمقاييس","لا يحق لها التدخل في المواصفات","إلغاء المواصفات الدولية"],correctIndex:1,explanation:"تمثل الجمعية صوت المستهلك في لجان وضع المواصفات لضمان جودة السلعة وسلامتها."},
+	{id:68,question:"ما هي العقوبة التي يفرضها القانون على من يبيع سلعاً منتهية الصلاحية (وفقاً للمادة 42)؟",choices:["الغرامة المالية والحبس أو إحداهما","الاعتذار في الجريدة الرسمية فقط","الحرمان من السفر","لا توجد عقوبة محددة"],correctIndex:0,explanation:"يفرض القانون عقوبات رادعة تشمل الحبس والغرامة لحماية أرواح المستهلكين."},
+	{id:69,question:"أين يقع المقر الرئيسي للجمعية اليمنية لحماية المستهلك؟",choices:["عدن","تعز","صنعاء","المكلا"],correctIndex:2,explanation:"يقع المقر الرئيسي للجمعية في العاصمة صنعاء مع وجود فروع في بعض المحافظات."},
+	{id:70,question:"ما هو 'اليوم العالمي لحماية المستهلك' الذي تشارك الجمعية في إحيائه سنوياً؟",choices:["1 مايو","15 مارس","1 يناير","2 ديسمبر"],correctIndex:1,explanation:"يحتفل العالم واليمن باليوم العالمي لحقوق المستهلك في 15 مارس من كل عام."},
+	{id:71,question:"عند حدوث 'تلوث بيئي' من مصنع يؤثر على سلامة السكان (المستهلكين)، يحق للجمعية:",choices:["إقامة دعوى قضائية نيابة عن المتضررين (الدعوى الجماعية)","بناء محطة معالجة للمصنع","إصدار أحكام قضائية","فرض ضرائب جديدة على المصنع"],correctIndex:0,explanation:"من أهم أدوار الجمعية هو التمثيل القانوني للمستهلكين في قضايا الضرر الجماعي."},
+	{id:72,question:"أي من المواد التالية في 'مصنع الإسفنج' يجب أن يوضع عليها ملصق تحذيري للمستهلك النهائي حسب معايير السلامة؟",choices:["الماء","الأصباغ أو المواد الكيميائية القابلة للاشتعال","بودرة الرخام","أكياس التغليف"],correctIndex:1,explanation:"يجب توضيح أي مخاطر كيميائية أو قابلية للاشتعال على المنتجات وفقاً لقانون حماية المستهلك."},
+	{id:73,question:"تعتمد الجمعية في تمويل أنشطتها بشكل أساسي على:",choices:["أرباح المتاجرة بالسلع","اشتراكات الأعضاء والمنح والهبات غير المشروطة","الضرائب المفروضة على المواطنين","الغرامات التي تحصلها من التجار"],correctIndex:1,explanation:"كجمعية أهلية، تعتمد على الاشتراكات والدعم المجتمعي لضمان استقلاليتها."},
+	{id:74,question:"ماذا يعني مصطلح 'فترة الضمان' (Warranty) في القانون اليمني؟",choices:["وعد شفوي من التاجر","التزام مكتوب بإصلاح أو استبدال السلعة خلال فترة محددة","حق التاجر في استرجاع السلعة","دفع مبلغ إضافي لتجربة المنتج"],correctIndex:1,explanation:"الضمان هو التزام قانوني يضمن للمستهلك جودة السلعة وعملها خلال مدة معلومة."},
+	{id:75,question:"في حال شراء 'أنابيب بلاستيكية' لمشروع هندسي ووجد أنها غير مطابقة للمواصفات، الجهة الأولى التي يلجأ إليها المهندس للمساعدة القانونية هي:",choices:["وزارة الصحة","جمعية حماية المستهلك أو هيئة المواصفات والمقاييس","نقابة الأطباء","إدارة المرور"],correctIndex:1,explanation:"هذه الجهات هي المسؤولة عن مطابقة المنتجات الصناعية للمواصفات المعتمدة."},
+	{id:76,question:"أي من السلوكيات التالية تعتبرها الجمعية 'ممارسة احتكارية' ضارة بالمستهلك؟",choices:["تخفيض الأسعار في المواسم","اتفاق التجار على رفع السعر وتخزين السلعة لتعطيش السوق","تحسين جودة التغليف","فتح فروع جديدة للمحل"],correctIndex:1,explanation:"الاحتكار والاتفاقات السرية لرفع الأسعار هي ممارسات يجرمها قانون حماية المستهلك وقانون المنافسة."},
+	{id:77,question:"ما هو رقم 'خط الشكاوى' أو التواصل الذي تروجه جمعيات حماية المستهلك غالباً للبلاغات السريعة؟",choices:["الرقم 199","الرقم 999","أرقام العمليات والرقابة بوزارة الصناعة والتجارة (مثل 174)","رقم النجدة"],correctIndex:2,explanation:"تستخدم وزارة الصناعة والجمعية أرقاماً مخصصة للبلاغات (مثل 174 في بعض المناطق) لاستقبال شكاوى المستهلكين."},
+	{id:78,question:"يؤكد القانون على ضرورة كتابة البيانات على السلعة باللغة:",choices:["الإنجليزية فقط","الفرنسية","اللغة العربية بشكل أساسي وواضح","اللغة الصينية"],correctIndex:2,explanation:"المادة (10) تلزم بوضع البيانات الإيضاحية باللغة العربية لتكون مفهومة للمستهلك المحلي."},
+	{id:79,question:"ما هو المبدأ الأساسي في 'أخلاقيات الهندسة' عند حدوث تعارض بين مصلحة صاحب العمل وسلامة المجتمع؟",choices:["تقديم مصلحة صاحب العمل للحفاظ على الوظيفة","تغليب سلامة وصحة ورفاهية المجتمع فوق كل اعتبار","الوقوف على الحياد وعدم التدخل","البحث عن حل وسط يرضي الطرفين حتى لو قلّت الأمان"],correctIndex:1,explanation:"المبدأ الأول في مواثيق أخلاق المهنة (مثل ASCE) ينص على أن سلامة الجمهور هي الأولوية القصوى للمهندس."},
+	{id:80,question:"في مشاريع الهندسة المدنية، ماذا يعني مصطلح 'التصميم المستدام' (Sustainable Design)؟",choices:["التصميم الذي يستهلك أقل قدر من الإسمنت","التصميم الذي يلبي احتياجات الحاضر دون المساس بقدرة الأجيال القادمة على تلبية احتياجاتها","التصميم الذي يعتمد على العمالة اليدوية فقط","التصميم الأرخص تكلفة في الوقت الحالي"],correctIndex:1,explanation:"الاستدامة توازن بين الأبعاد الاقتصادية والاجتماعية والبيئية لضمان استمرار الموارد للأجيال القادمة."},
+	{id:81,question:"أي من المواد التالية تعتبر 'صديقة للبيئة' ويمكن للمهندس المدني استخدامها لتقليل البصمة الكربونية؟",choices:["الإسمنت البورتلاندي العادي بكثافة","الخرسانة الخضراء (Green Concrete) التي تستخدم رماد المتطاير أو الركام المعاد تدويره","البلاستيك غير القابل للتحلل","الأصباغ الكيميائية السامة"],correctIndex:1,explanation:"الخرسانة الخضراء تقلل من انبعاثات CO2 المرتبطة بصناعة الإسمنت التقليدية."},
+	{id:82,question:"ما هو دور 'النقابات المهنية' (مثل نقابة المهندسين اليمنيين) في الجانب الأخلاقي؟",choices:["توفير فرص عمل فقط","وضع ومراقبة الالتزام بميثاق شرف أخلاقي للمهنة","تنظيم الرحلات الترفيهية","تحديد أسعار المواد الإنشائية"],correctIndex:1,explanation:"النقابات تضع القواعد الأخلاقية وتحاسب المهندسين المقصرين مهنياً أو أخلاقياً."},
+	{id:83,question:"ماذا يعني مفهوم 'كفاءة الطاقة' (Energy Efficiency) في المباني التي يصممها المهندس المدني؟",choices:["إطفاء الأنوار طوال اليوم","استخدام عوازل حرارية وتقنيات تقلل استهلاك الطاقة للتدفئة والتبريد","عدم استخدام المصاعد","بناء غرف صغيرة جداً"],correctIndex:1,explanation:"كفاءة الطاقة تهدف لتقديم نفس الخدمة (راحة حرارية) بأقل استهلاك ممكن للموارد."},
+	{id:84,question:"عند إعدادك 'لدليل اللجنة العلمية'، ما هي القيمة الأخلاقية التي تعززها بمشاركة المعرفة مع زملائك؟",choices:["الاستعلاء العلمي","التعاون المهني ونقل الخبرات لرفع كفاءة الجيل القادم من المهندسين","الحصول على شهرة شخصية فقط","تعقيد المناهج الدراسية"],correctIndex:1,explanation:"نقل المعرفة وتدريب المهندسين الجدد هو واجب أخلاقي يساهم في رقي المهنة والمجتمع."},
+	{id:85,question:"في الهندسة البيئية، ماذا يقصد بـ 'التلوث العابر للحدود'؟",choices:["تلوث داخل حدود المصنع فقط","تلوث ينتقل من دولة إلى أخرى عبر الرياح أو الأنهار الدولية","تلوث ناتج عن السيارات العابرة للمدن","تلوث الهواء داخل المنزل"],correctIndex:1,explanation:"مثل الدخان البركاني أو تلوث الأنهار الدولية، وهو يتطلب تعاوناً قانونياً دولياً."},
+	{id:86,question:"أي من 'أهداف التنمية المستدامة' (SDGs) يرتبط بشكل مباشر بعمل مهندس المياه والبيئة؟",choices:["الهدف الثاني (القضاء على الجوع)","الهدف السادس (المياه النظيفة والنظافة الصحية)","الهدف العاشر (الحد من أوجه عدم المساواة)","الهدف السادس عشر (السلام والعدل)"],correctIndex:1,explanation:"الهدف السادس يركز بشكل كامل على إدارة موارد المياه ومعالجة الصرف الصحي."},
+	{id:87,question:"ما هو الأثر الأخلاقي لـ 'قبول الرشاوى' أو الهدايا مقابل التغاضي عن مواصفات غير مطابقة؟",choices:["يساعد في تسريع وتيرة العمل","خيانة للأمانة المهنية ويؤدي لضعف المنشآت وتهديد الأرواح","تصرف مقبول في بعض الثقافات","يزيد من دخل المهندس دون ضرر"],correctIndex:1,explanation:"النزاهة هي أساس مهنة الهندسة، وأي تلاعب بالمواصفات قد يؤدي لكوارث إنشائية أو بيئية."},
+	{id:88,question:"في ظل النشاط البركاني قرب البحر الأحمر، ما هو الواجب المهني لمهندسي المنشآت الساحلية؟",choices:["تجاهل النشاط لأنه ظاهرة طبيعية","تقييم متانة المنشآت لمقاومة الزلازل وتأثير الرماد والغازات الكبريتية","إغلاق المنشآت نهائياً والرحيل","تغيير لون المباني"],correctIndex:1,explanation:"يجب على المهندس استباق المخاطر الطبيعية وتصميم منشآت قادرة على الصمود والاستجابة للطوارئ."},
+	{id:89,question:"ماذا تعني 'المرونة الحضرية' (Urban Resilience) تجاه الكوارث البيئية؟",choices:["بناء مدن من المطاط","قدرة المدينة وأنظمتها على الصمود والتعافي السريع من الكوارث (كالسيول أو الزلازل)","منع الناس من العيش في المدن","زيادة عدد مراكز التسوق"],correctIndex:1,explanation:"المرونة تعني التصميم الذكي الذي يقلل الخسائر ويسمح بعودة الحياة لطبيعتها بسرعة بعد الكارثة."},
+	{id:90,question:"بصفتك مؤلفاً لكتاب 'مقدمة في الخرسانة'، كيف تساهم 'الأبحاث العلمية' في حماية البيئة؟",choices:["بزيادة عدد صفحات الكتب","بتطوير خلطات خرسانية تستهلك مياهاً أقل وتستخدم مواداً معاداً تدويرها","بإثبات أن الخرسانة لا تتأثر بالبيئة","بتعقيد عملية البناء"],correctIndex:1,explanation:"البحث العلمي يهدف دائماً لإيجاد حلول أكثر كفاءة وأقل ضرراً على البيئة."},
+	{id:91,question:"ما هي 'بصمة المياه' (Water Footprint) للمنتجات الصناعية؟",choices:["لون الماء الناتج عن المصنع","إجمالي حجم المياه العذبة المستخدمة لإنتاج السلعة طوال مراحل التصنيع","مساحة الخزانات في المصنع","كمية المياه التي يشربها العمال"],correctIndex:1,explanation:"يساعد حساب بصمة المياه في فهم مدى استهلاك المشروع للموارد المائية المحدودة."},
+	{id:92,question:"يعتبر المهندس المدني 'مديراً للموارد'، فأي من هذه الموارد يجب الحفاظ عليها بشدة في اليمن؟",choices:["الحديد المستورد","المياه الجوفية والتربة الصالحة للزراعة","البلاستيك","الإسمنت"],correctIndex:1,explanation:"نظراً للشحة المائية في اليمن، تعتبر إدارة المياه الجوفية وحمايتها من التلوث واجباً وطنياً ومهنياً."},
+	{id:93,question:"ما هو مبدأ 'الملوث يدفع' (Polluter Pays Principle) في التشريعات البيئية؟",choices:["أن يدفع المستهلك ثمن التلوث","أن يتحمل المتسبب في التلوث تكاليف المعالجة والتعويض عن الأضرار","أن تدفع الدولة تكاليف تنظيف المصانع الخاصة","إلغاء الضرائب عن المصانع الملوثة"],correctIndex:1,explanation:"يهدف هذا المبدأ لتحميل المنشآت مسؤولية أفعالها وتشجيعها على تبني تقنيات نظيفة."},
+	{id:94,question:"لماذا يُطلب من المهندس تقديم 'خطة طوارئ بيئية' عند تصميم المنشآت الصناعية؟",choices:["لزيادة الأوراق البيروقراطية","للتعامل الفوري مع حوادث التسرب الكيميائي أو الحرائق لمنع تلوث البيئة","للحصول على خصم ضريبي","لإبهار صاحب العمل"],correctIndex:1,explanation:"التخطيط للطوارئ يقلل من حجم الكارثة البيئية في حال وقوع حادث غير متوقع."},
+	{id:95,question:"ما هو مفهوم 'التكافؤ البيئي' في المشاريع الهندسية الكبرى؟",choices:["أن تتساوى أرباح جميع المصانع","تعويض الضرر البيئي في مكان ما (كقطع أشجار) بزراعة أو تحسين البيئة في مكان آخر","استخدام نفس نوع المواسير في كل المشاريع","مساواة رواتب المهندسين البيئيين"],correctIndex:1,explanation:"يهدف هذا المبدأ لضمان عدم حدوث صافي خسارة في التنوع البيولوجي نتيجة المشاريع الإنشائية."},
+	{id:96,question:"بناءً على تقريركم الميداني، إذا قرر مصنع البلاستيك التوسع لإنتاج أنابيب ضغط مياه الشرب، أي جهة يلزمه قانوناً مطابقة منتجه لها لضمان سلامة المستهلك؟",choices:["وزارة الزراعة","الهيئة اليمنية للمواصفات والمقاييس وضبط الجودة","جمعية المهندسين المعماريين","مصلحة الضرائب"],correctIndex:1,explanation:"أي منتج هندسي يمس حياة المستهلك (مثل أنابيب المياه) يجب أن يطابق المواصفات القياسية المعتمدة من هيئة المواصفات لضمان عدم تسرب مواد سامة للمياه."},
+	{id:97,question:"ما هو الرابط العلمي بين 'ثقب الأوزون' و'التغير المناخي' في المناطق الساحلية كالبحر الأحمر؟",choices:["كلاهما يؤدي لزيادة ملوحة البحر","الأوزون غاز دفيء، ونضوبه يغير أنماط الرياح ودرجات حرارة المحيطات، مما يؤثر على النظم البيئية البحرية","الأوزون يمنع حدوث البراكين تحت الماء","لا توجد علاقة علمية بينهما"],correctIndex:1,explanation:"هناك ترابط معقد؛ حيث يؤثر نضوب الأوزون في الستراتوسفر على التيارات الهوائية والمناخ في النصف الجنوبي تحديداً، مما يؤثر على حرارة البحار."},
+	{id:98,question:"بصفتك مؤلف كتاب 'مقدمة في الخرسانة'، كيف تعالج مشكلة 'المطر الحمضي' (الناتج عن ثوران البركان) هندسياً لحماية المنشآت؟",choices:["بدهان الخرسانة بمواد زيتية عادية","استخدام خرسانة عالية الأداء (HPC) ذات نفاذية منخفضة جداً وطلاءات إيبوكسية واقية","زيادة كمية المياه في الخلطة الخرسانية","تقليل سمك الغطاء الخرساني (Concrete Cover)"],correctIndex:1,explanation:"الخرسانة قليلة النفاذية تمنع تغلغل الأحماض إلى العمق، والطلاءات الواقية تشكل خط دفاع أول ضد الهجوم الكيميائي الحمضي."},
+	{id:99,question:"في حال حدوث ثوران بركاني أدى لانبعاث رماد كثيف، كيف تتأثر 'محطات معالجة مياه الشرب' من الناحية التشغيلية؟",choices:["تتحسن كفاءة الفلاتر الرملية","يزداد الحمل الكدري (Turbidity) بشكل مفاجئ مما يتطلب تعديل جرعات الروائب (Coagulants)","تتوقف البكتيريا في حوض التهوية عن العمل","لا يتأثر نظام المعالجة بالرماد"],correctIndex:1,explanation:"الرماد البركاني يزيد من عكارة المياه السطحية، مما يتطلب إجراء (Jar Test) فورياً لتحديد الجرعات الكيميائية الجديدة لضمان نقاء المياه."},
+	{id:100,question:"أي استراتيجية تجمع بين 'إدارة النفايات الصلبة' و'حماية المستهلك' في قطاع الأغذية؟",choices:["حرق النفايات في الشوارع","حظر استخدام البلاستيك غير القابل للتدوير في تغليف الأطعمة وتشجيع البدائل الحيوية","زيادة أسعار المعلبات الغذائية","إلغاء تاريخ الصلاحية على العبوات"],correctIndex:1,explanation:"هذا التوجه يحمي البيئة من تراكم البلاستيك ويحمي المستهلك من انتقال المواد الكيميائية الضارة للطعام (Migration)."},
+	];
+
+(function validateData(){
+	let missingChoices=[], missingAnswer=[], missingExplanation=[];
+	questions.forEach(q=>{
+	if(!q.choices||q.choices.length<4||q.choices.some(c=>c==="")) missingChoices.push(q.id);
+	if(q.correctIndex<0||q.correctIndex>3) missingAnswer.push(q.id);
+	if(!q.explanation||q.explanation==="غير متوفر") missingExplanation.push(q.id);
+	});
+console.table({
+	totalQuestions:questions.length,
+	questionsWithMissingChoices:missingChoices.length,
+	questionsWithMissingAnswer:missingAnswer.length,
+	questionsWithMissingExplanation:missingExplanation.length
+	});
+	if(missingChoices.length) console.warn("Missing choices:",missingChoices);
+	if(missingAnswer.length) console.warn("Missing answers:",missingAnswer);
+	if(missingExplanation.length) console.warn("Missing explanations:",missingExplanation);
+	window._dataCheck={missingChoices,missingAnswer,missingExplanation};
+	})();
+
+const LS_KEY='quiz_sanitary_eng_v2';
+let state=null;
+let timerInterval=null;
+let currentIndex=0;
+
+function defaultState(){
+return{
+order:[...Array(100).keys()],
+choiceOrders:questions.map((_,i)=>[0,1,2,3]),
+answers:new Array(100).fill(-1),
+confirmed:new Array(100).fill(false),
+duration:120,
+remaining:120*60,
+startTime:Date.now(),
+currentIndex:0,
+finished:false,
+shuffleQ:false,
+shuffleC:false
+};
+}
+
+function saveState(){localStorage.setItem(LS_KEY,JSON.stringify(state));}
+function loadState(){try{return JSON.parse(localStorage.getItem(LS_KEY));}catch(e){return null;}}
+function clearState(){localStorage.removeItem(LS_KEY);}
+
+function shuffle(arr){
+let a=[...arr];
+for(let i=a.length-1;i>0;i--){let j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}
+return a;
+}
+
+window.addEventListener('DOMContentLoaded',()=>{
+let saved=loadState();
+if(saved&&!saved.finished){
+document.getElementById('resumeBanner').classList.remove('hidden');
+}
+});
+
+function resumeQuiz(){
+state=loadState();
+currentIndex=state.currentIndex||0;
+show('quizScreen');
+renderQuestion();
+startTimer();
+}
+
+function startNew(){
+clearState();
+document.getElementById('resumeBanner').classList.add('hidden');
+}
+
+function startQuiz(){
+let dur=parseInt(document.getElementById('durationInput').value)||120;
+let sQ=document.getElementById('shuffleQ').checked;
+let sC=document.getElementById('shuffleC').checked;
+state=defaultState();
+state.duration=dur;
+state.remaining=dur*60;
+state.shuffleQ=sQ;
+state.shuffleC=sC;
+if(sQ) state.order=shuffle(state.order);
+if(sC){
+state.choiceOrders=questions.map(()=>shuffle([0,1,2,3]));
+}
+state.startTime=Date.now();
+currentIndex=0;
+state.currentIndex=0;
+saveState();
+show('quizScreen');
+renderQuestion();
+startTimer();
+}
+
+function show(id){
+['startScreen','quizScreen','resultsScreen','reviewScreen'].forEach(s=>{
+document.getElementById(s).classList.toggle('hidden',s!==id);
+});
+}
+
+function startTimer(){
+updateTimerDisplay();
+timerInterval=setInterval(()=>{
+state.remaining--;
+if(state.remaining<=0){
+state.remaining=0;
+clearInterval(timerInterval);
+finishQuiz(true);
+return;
+}
+updateTimerDisplay();
+saveState();
+},1000);
+}
+
+function updateTimerDisplay(){
+let m=Math.floor(state.remaining/60);
+let s=state.remaining%60;
+document.getElementById('timerDisplay').textContent=
+String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');
+if(state.remaining<60) document.getElementById('timerDisplay').style.animation='blink 1s infinite';
+}
+
+function renderQuestion(){
+let qIdx=state.order[currentIndex];
+let q=questions[qIdx];
+let cOrder=state.choiceOrders[qIdx];
+
+document.getElementById('qNumber').textContent='السؤال '+q.id+' ('+( currentIndex+1)+' من '+state.order.length+')';
+document.getElementById('qText').textContent=q.question;
+document.getElementById('progressInfo').textContent=(currentIndex+1)+' / '+state.order.length;
+document.getElementById('progressBar').style.width=((currentIndex+1)/state.order.length*100)+'%';
+
+let cc=document.getElementById('choicesContainer');
+cc.innerHTML='';
+let labels=['A','B','C','D'];
+cOrder.forEach((origIdx,dispIdx)=>{
+let btn=document.createElement('button');
+btn.className='choice-btn';
+btn.textContent=labels[dispIdx]+') '+q.choices[origIdx];
+btn.dataset.origIdx=origIdx;
+btn.dataset.dispIdx=dispIdx;
+if(state.confirmed[qIdx]){
+btn.classList.add('locked');
+if(origIdx===q.correctIndex) btn.classList.add('correct');
+if(state.answers[qIdx]===origIdx&&origIdx!==q.correctIndex) btn.classList.add('wrong');
+} else {
+if(state.answers[qIdx]===origIdx) btn.classList.add('selected');
+btn.addEventListener('click',()=>selectChoice(qIdx,origIdx));
+}
+cc.appendChild(btn);
+});
+
+let expBox=document.getElementById('explanationBox');
+if(state.confirmed[qIdx]){
+expBox.textContent='توضيح: '+q.explanation;
+expBox.classList.add('show');
+} else {
+expBox.textContent='';
+expBox.classList.remove('show');
+}
+
+document.getElementById('confirmBtn').disabled=state.confirmed[qIdx];
+document.getElementById('confirmBtn').style.opacity=state.confirmed[qIdx]?'0.4':'1';
+document.getElementById('prevBtn').disabled=currentIndex===0;
+document.getElementById('nextBtn').disabled=currentIndex===state.order.length-1;
+
+state.currentIndex=currentIndex;
+saveState();
+}
+
+function selectChoice(qIdx,origIdx){
+if(state.confirmed[qIdx]) return;
+state.answers[qIdx]=origIdx;
+saveState();
+renderQuestion();
+}
+
+function confirmAnswer(){
+let qIdx=state.order[currentIndex];
+if(state.confirmed[qIdx]) return;
+if(state.answers[qIdx]===-1){
+if(!confirm('لم تختر إجابة. هل تريد التأكيد بدون إجابة؟')) return;
+}
+state.confirmed[qIdx]=true;
+saveState();
+renderQuestion();
+}
+
+function goTo(idx){
+if(idx<0||idx>=state.order.length) return;
+currentIndex=idx;
+renderQuestion();
+}
+
+function finishQuiz(auto){
+if(!auto){
+let unanswered=state.confirmed.filter(c=>!c).length;
+let msg='هل تريد إنهاء الاختبار؟';
+if(unanswered>0) msg+='\nلديك '+unanswered+' سؤال غير مؤكد.';
+if(!confirm(msg)) return;
+}
+clearInterval(timerInterval);
+state.finished=true;
+saveState();
+showResults();
+}
+
+function showResults(){
+show('resultsScreen');
+let correct=0,wrong=0,skipped=0;
+questions.forEach((_,i)=>{
+if(!state.confirmed[i]){skipped++;return;}
+if(state.answers[i]===questions[i].correctIndex) correct++;
+else wrong++;
+});
+let total=questions.length;
+let pct=Math.round(correct/total*100);
+document.getElementById('scorePercent').textContent=pct+'%';
+document.getElementById('scoreLabel').textContent=correct+' / '+total;
+document.getElementById('statCorrect').textContent=correct;
+document.getElementById('statWrong').textContent=wrong;
+document.getElementById('statSkip').textContent=skipped;
+
+let elapsed=state.duration*60-state.remaining;
+let em=Math.floor(elapsed/60);
+let es=elapsed%60;
+document.getElementById('statTime').textContent=em+' د '+es+' ث';
+
+let circle=document.getElementById('scoreCircle');
+if(pct>=80) circle.style.borderColor=getComputedStyle(document.documentElement).getPropertyValue('--success');
+else if(pct>=50) circle.style.borderColor='#f59e0b';
+else circle.style.borderColor=getComputedStyle(document.documentElement).getPropertyValue('--danger');
+
+let dc=window._dataCheck;
+let dcDiv=document.getElementById('dataCheck');
+if(dc.missingChoices.length||dc.missingAnswer.length||dc.missingExplanation.length){
+dcDiv.classList.remove('hidden');
+dcDiv.innerHTML='<h4>تحقق البيانات</h4>'+
+(dc.missingChoices.length?'<p class="warn">أسئلة بخيارات ناقصة: '+dc.missingChoices.join(', ')+'</p>':'')+
+(dc.missingAnswer.length?'<p class="warn">أسئلة بإجابة غير محددة: '+dc.missingAnswer.join(', ')+'</p>':'')+
+(dc.missingExplanation.length?'<p class="warn">أسئلة بتوضيح ناقص: '+dc.missingExplanation.join(', ')+'</p>':'');
+} else {
+dcDiv.classList.remove('hidden');
+dcDiv.innerHTML='<h4>تحقق البيانات</h4><p style="color:var(--success)">جميع الأسئلة مكتملة البيانات (100/100).</p>';
+}
+}
+
+function showReview(filter){
+show('reviewScreen');
+filterReview(filter||'all',document.querySelector('.review-filters button.active'));
+}
+
+function filterReview(type,btn){
+document.querySelectorAll('.review-filters button').forEach(b=>b.classList.remove('active'));
+if(btn) btn.classList.add('active');
+
+let list=document.getElementById('reviewList');
+list.innerHTML='';
+let labels=['A','B','C','D'];
+
+state.order.forEach((qIdx,i)=>{
+let q=questions[qIdx];
+let isConfirmed=state.confirmed[qIdx];
+let userAns=state.answers[qIdx];
+let isCorrect=userAns===q.correctIndex;
+let isSkipped=!isConfirmed;
+
+if(type==='correct'&&(!isConfirmed||!isCorrect)) return;
+if(type==='wrong'&&(!isConfirmed||isCorrect)) return;
+if(type==='skipped'&&isConfirmed) return;
+
+let cOrder=state.choiceOrders[qIdx];
+
+let div=document.createElement('div');
+div.className='review-item';
+
+let userLabel=isSkipped?'لم يُجب':labels[cOrder.indexOf(userAns)]+') '+q.choices[userAns];
+let correctLabel=labels[cOrder.indexOf(q.correctIndex)]+') '+q.choices[q.correctIndex];
+
+div.innerHTML=
+'<div class="ri-q">'+q.id+'. '+q.question+'</div>'+
+'<div class="ri-your '+(isSkipped?'':isCorrect?'ri-correct':'ri-wrong')+'">إجابتك: '+userLabel+'</div>'+
+'<div class="ri-correct">الإجابة الصحيحة: '+correctLabel+'</div>'+
+'<div class="ri-exp">توضيح: '+q.explanation+'</div>';
+
+list.appendChild(div);
+});
+
+if(!list.children.length){
+list.innerHTML='<p style="text-align:center;padding:20px;color:var(--text-light)">لا توجد نتائج لهذا الفلتر.</p>';
+}
+}
+
+function backToStart(){
+clearState();
+state=null;
+show('startScreen');
+document.getElementById('resumeBanner').classList.add('hidden');
+}
+
+let style=document.createElement('style');
+style.textContent='@keyframes blink{0%,100%{opacity:1}50%{opacity:0.3}}';
+document.head.appendChild(style);
+</script>
+ <div class="arrow-down">⬇️</div>
+            
+            <div class="footer">
+                <p>إعداد المهندس / محمد العذري</p>
+		<p>تطوير المهندس / لؤي السامعي</p>
+            
+            </div>
+        </div>
+        
+       
+        <div class="contact-section">
+            <div class="contact-container">
+                <h2>📧 تواصل معنا</h2>
+                <p>لأي استفسارات أو ملاحظات</p>
+                <a href="mailto:sonalothary2002@gmail.com" class="email-button">
+                    <span class="email-icon">✉️</span>
+                    <span>sonalothary2002@gmail.com</span>
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        function toggleGroup(groupId) {
+            const group = document.getElementById(groupId);
+            group.classList.toggle('collapsed');
+
+        
+        function toggleItem(element, event) {
+            
+            event.stopPropagation();
+            
+            const details = element.querySelector('.item-details');
+            const arrow = element.querySelector('.item-arrow');
+            
+            element.classList.toggle('item-collapsed');
+        }
+        
+    
+        // document.querySelectorAll('.process-item').forEach(item => {
+        //     item.classList.add('item-collapsed');
+        // });
+    </script>
+</body>
+</html>
